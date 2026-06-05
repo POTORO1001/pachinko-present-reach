@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>プレゼント抽選スーパーリーチ</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08070b;
+      --panel: rgba(20, 17, 26, 0.82);
+      --gold: #ffd56a;
+      --hot: #ff305f;
+      --cyan: #56f2ff;
+      --green: #89ff6f;
+      --ink: #fffaf0;
+      --muted: #cbbfd4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 30% 15%, rgba(255, 48, 95, 0.2), transparent 24rem),
+        radial-gradient(circle at 75% 30%, rgba(86, 242, 255, 0.16), transparent 28rem),
+        linear-gradient(145deg, #050508, #17101d 48%, #07060a);
+      color: var(--ink);
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .machine {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+      padding: clamp(14px, 2vw, 26px);
+      isolation: isolate;
+    }
+
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -4;
+      opacity: 0.82;
+      pointer-events: none;
+    }
+
+    .bg-shade {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.48) 58%, rgba(0, 0, 0, 0.72)),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58));
+      pointer-events: none;
+    }
+
+    .machine::before,
+    .machine::after {
+      content: "";
+      position: fixed;
+      inset: -20vmax;
+      z-index: -2;
+      background:
+        conic-gradient(from 0deg, transparent, rgba(255, 213, 106, 0.14), transparent 26%, rgba(255, 48, 95, 0.16), transparent 58%, rgba(86, 242, 255, 0.14), transparent);
+      animation: spin 14s linear infinite;
+    }
+
+    .machine::after {
+      z-index: -1;
+      background-image: linear-gradient(110deg, transparent 0 18%, rgba(255, 255, 255, 0.11) 19%, transparent 20% 48%, rgba(255, 213, 106, 0.11) 49%, transparent 50% 100%);
+      background-size: 160px 100%;
+      animation: sweep 2.8s linear infinite;
+      opacity: 0.42;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes sweep {
+      to { transform: translateX(160px); }
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .label {
+      color: var(--cyan);
+      font-size: clamp(12px, 1.2vw, 15px);
+      font-weight: 800;
+      letter-spacing: 0;
+      text-shadow: 0 0 14px rgba(86, 242, 255, 0.8);
+    }
+
+    .pachi-text {
+      position: relative;
+      display: inline-block;
+      color: #f42734;
+      font-family: "HGP創英角ｺﾞｼｯｸUB", "HGP創英角ゴシックUB", "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+      font-weight: 950;
+      letter-spacing: 0;
+      -webkit-text-stroke: 0.038em #fff8c7;
+      paint-order: stroke fill;
+      filter:
+        drop-shadow(0.055em 0.055em 0 #5b090c)
+        drop-shadow(0.1em 0.1em 0 #160001)
+        drop-shadow(0 0 0.11em rgba(255, 247, 153, 0.82))
+        drop-shadow(0 0 0.28em rgba(255, 38, 67, 0.62));
+      text-shadow:
+        0 -0.05em 0 #fff8d6,
+        0.026em 0.026em 0 #ffe45d,
+        -0.026em 0.026em 0 #ffe45d,
+        0.06em 0.06em 0 #a30710,
+        0.095em 0.095em 0 #330004;
+    }
+
+    .pachi-text::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      color: transparent;
+      background: linear-gradient(180deg, #fff 0 14%, #fff8b8 15% 30%, #ffea3d 31% 42%, #ff4c47 43% 66%, #b6000b 67% 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-stroke: 0;
+      line-height: inherit;
+      text-align: inherit;
+      white-space: pre-line;
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 3px 0 0;
+      font-size: clamp(26px, 4.8vw, 70px);
+      line-height: 0.95;
+    }
+
+    .stamp-card {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      width: min(250px, 35vw);
+      padding: 9px;
+      border: 2px solid rgba(255, 213, 106, 0.8);
+      border-radius: 8px;
+      background: rgba(10, 8, 12, 0.78);
+      box-shadow: inset 0 0 22px rgba(255, 213, 106, 0.24), 0 0 18px rgba(255, 213, 106, 0.22);
+    }
+
+    .stamp {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff4b3 0 18%, #ffcf43 22% 48%, #a9192e 53% 100%);
+      color: #3e090f;
+      font-size: clamp(12px, 1.8vw, 19px);
+      font-weight: 950;
+      text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+      animation: stampPulse 1.4s ease-in-out infinite;
+    }
+
+    .stamp:nth-child(2n) {
+      animation-delay: -0.45s;
+    }
+
+    @keyframes stampPulse {
+      50% { transform: scale(1.08); filter: brightness(1.22); }
+    }
+
+    .stage {
+      display: grid;
+      align-content: center;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(18px, 3vw, 36px) 0;
+    }
+
+    .announcement {
+      min-height: clamp(62px, 9vw, 108px);
+      display: grid;
+      place-items: center;
+      margin-bottom: clamp(12px, 2vw, 22px);
+      font-size: clamp(25px, 5.3vw, 76px);
+      line-height: 1.08;
+      text-align: center;
+      transform: skew(-5deg);
+    }
+
+    .announcement.flash {
+      animation: flashText 0.72s ease-in-out infinite;
+    }
+
+    @keyframes flashText {
+      50% { color: var(--gold); transform: scale(1.025) skew(-5deg); }
+    }
+
+    .reels {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(10px, 2vw, 22px);
+    }
+
+    .reels.focus-mode {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reels.focus-mode .reel {
+      display: none;
+    }
+
+    .reels.focus-mode .reel.active {
+      display: block;
+      transform: scale(1.04);
+      border-color: rgba(255, 213, 106, 0.96);
+      box-shadow:
+        inset 0 0 42px rgba(255, 213, 106, 0.18),
+        0 0 38px rgba(255, 48, 95, 0.38),
+        0 0 62px rgba(255, 213, 106, 0.26);
+    }
+
+    .reels.focus-mode .reel.active .reel-title {
+      font-size: clamp(18px, 2.8vw, 34px);
+      color: #fff4b3;
+      text-shadow: 0 0 12px rgba(255, 213, 106, 0.72);
+    }
+
+    .reels.focus-mode .reel.active .reel-value {
+      min-height: clamp(190px, 30vw, 330px);
+      font-size: clamp(54px, 10vw, 140px);
+    }
+
+    .reel {
+      min-width: 0;
+      padding: clamp(12px, 2vw, 20px);
+      border: 2px solid rgba(255, 255, 255, 0.26);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.28)), var(--panel);
+      box-shadow:
+        inset 0 0 32px rgba(255, 255, 255, 0.08),
+        0 0 28px rgba(86, 242, 255, 0.14);
+    }
+
+    .reel.locked {
+      border-color: rgba(137, 255, 111, 0.92);
+      box-shadow:
+        inset 0 0 34px rgba(137, 255, 111, 0.12),
+        0 0 26px rgba(137, 255, 111, 0.42);
+    }
+
+    .reel-title {
+      color: var(--muted);
+      font-size: clamp(12px, 1.5vw, 18px);
+      font-weight: 850;
+      text-align: center;
+    }
+
+    .reel-value {
+      display: grid;
+      place-items: center;
+      min-height: clamp(94px, 15vw, 178px);
+      margin-top: 8px;
+      border-radius: 7px;
+      background:
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent),
+        radial-gradient(circle at center, rgba(255, 213, 106, 0.18), rgba(0, 0, 0, 0.58));
+      font-size: clamp(28px, 5.6vw, 76px);
+      line-height: 1;
+      text-align: center;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    .spinning .reel-value {
+      animation: reelShake 0.075s linear infinite;
+    }
+
+    @keyframes reelShake {
+      25% { transform: translate(2px, -1px); }
+      50% { transform: translate(-2px, 1px); }
+      75% { transform: translate(1px, 2px); }
+    }
+
+    .result {
+      min-height: clamp(78px, 11vw, 130px);
+      display: grid;
+      place-items: center;
+      margin-top: clamp(14px, 2.5vw, 26px);
+      padding: clamp(10px, 2vw, 18px);
+      border-radius: 8px;
+      background: rgba(4, 3, 6, 0.64);
+      border: 2px solid rgba(255, 213, 106, 0.35);
+      font-size: clamp(19px, 3.2vw, 46px);
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .result.jackpot {
+      animation: jackpot 0.8s ease-in-out infinite;
+      border-color: var(--gold);
+    }
+
+    @keyframes jackpot {
+      50% { filter: brightness(1.55); transform: scale(1.015); }
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .launch {
+      min-width: min(430px, 100%);
+      min-height: 58px;
+      padding: 12px 24px;
+      border: 0;
+      border-radius: 8px;
+      color: #230308;
+      background: linear-gradient(180deg, #fff3b6, #ffd24f 44%, #ff3b69 45%, #c90d39);
+      box-shadow: 0 8px 0 #6d071e, 0 0 34px rgba(255, 48, 95, 0.75);
+      font-size: clamp(19px, 2.7vw, 34px);
+      font-weight: 950;
+      cursor: pointer;
+      text-shadow: 0 1px rgba(255, 255, 255, 0.52);
+    }
+
+    .launch:active {
+      transform: translateY(5px);
+      box-shadow: 0 3px 0 #6d071e, 0 0 24px rgba(255, 48, 95, 0.65);
+    }
+
+    .launch:disabled {
+      cursor: wait;
+      filter: grayscale(0.35) brightness(0.75);
+    }
+
+    .burst {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-conic-gradient(from 0deg, rgba(255, 213, 106, 0.0) 0 5deg, rgba(255, 213, 106, 0.32) 6deg 9deg, transparent 10deg 15deg);
+      opacity: 0;
+      transform: scale(0.2);
+      z-index: 5;
+    }
+
+    .burst.on {
+      animation: burst 0.62s ease-out;
+    }
+
+    @keyframes burst {
+      0% { opacity: 0.92; transform: scale(0.2) rotate(0deg); }
+      100% { opacity: 0; transform: scale(1.55) rotate(18deg); }
+    }
+
+    .cutin {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 48, 95, 0.9);
+      font-size: clamp(46px, 13vw, 168px);
+      text-align: center;
+      transform: translateX(-110%);
+      pointer-events: none;
+    }
+
+    .cutin.green {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(180, 255, 123, 0.32), transparent 34%),
+        linear-gradient(90deg, rgba(2, 52, 24, 0.96), rgba(22, 160, 66, 0.94), rgba(0, 45, 22, 0.96));
+      -webkit-text-stroke-color: #eaffd8;
+      filter:
+        drop-shadow(0.04em 0.04em 0 #01240d)
+        drop-shadow(0 0 0.2em rgba(137, 255, 111, 0.9))
+        drop-shadow(0 0 0.46em rgba(55, 255, 100, 0.72));
+    }
+
+    .cutin.red {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 213, 106, 0.22), transparent 34%),
+        linear-gradient(90deg, rgba(84, 0, 8, 0.96), rgba(255, 37, 67, 0.94), rgba(78, 0, 12, 0.96));
+      -webkit-text-stroke-color: #fff1a8;
+      filter:
+        drop-shadow(0.04em 0.04em 0 #3f0008)
+        drop-shadow(0 0 0.2em rgba(255, 213, 106, 0.92))
+        drop-shadow(0 0 0.5em rgba(255, 48, 95, 0.82));
+    }
+
+    .cutin.rainbow {
+      background:
+        linear-gradient(90deg, #ff1744, #ff9100, #ffee58, #00e676, #00b0ff, #7c4dff, #ff1744);
+      background-size: 220% 100%;
+      animation: rainbowSlide 1.45s linear infinite;
+      -webkit-text-stroke-color: #fff;
+      filter:
+        drop-shadow(0.04em 0.04em 0 #220018)
+        drop-shadow(0 0 0.2em rgba(255, 255, 255, 0.95))
+        drop-shadow(0 0 0.55em rgba(255, 255, 255, 0.8));
+    }
+
+    .cutin.horse {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 213, 106, 0.14), transparent 34%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.98), rgba(12, 12, 12, 0.96), rgba(0, 0, 0, 0.98));
+      filter:
+        drop-shadow(0 0 0.18em rgba(255, 213, 106, 0.82))
+        drop-shadow(0 0 0.48em rgba(255, 48, 95, 0.54));
+      font-size: clamp(36px, 8.6vw, 118px);
+    }
+
+    .horse-silhouette {
+      width: min(72vw, 620px);
+      max-height: 70vh;
+      overflow: visible;
+      filter:
+        drop-shadow(0 0 14px rgba(255, 213, 106, 0.95))
+        drop-shadow(0 0 32px rgba(255, 48, 95, 0.72));
+      transform: translateY(2vh);
+    }
+
+    .horse-silhouette .horse-fill {
+      fill: #020202;
+      stroke: #ffdc70;
+      stroke-width: 8;
+      stroke-linejoin: round;
+    }
+
+    .horse-silhouette .horse-eye {
+      fill: #ff2544;
+      filter: drop-shadow(0 0 7px #ff2544);
+    }
+
+    .cutin.on {
+      animation: cutin 1.45s cubic-bezier(.16,.94,.28,1);
+    }
+
+    .cutin.rainbow.on {
+      animation:
+        cutin 1.45s cubic-bezier(.16,.94,.28,1),
+        rainbowSlide 1.45s linear infinite;
+    }
+
+    @keyframes cutin {
+      0% { transform: translateX(-110%) skew(-12deg); }
+      24%, 82% { transform: translateX(0) skew(-12deg); }
+      100% { transform: translateX(110%) skew(-12deg); }
+    }
+
+    @keyframes rainbowSlide {
+      to { background-position: 220% 0; }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        overflow: auto;
+      }
+
+      .machine {
+        min-height: 100svh;
+      }
+
+      .topbar {
+        align-items: start;
+      }
+
+      .stamp-card {
+        width: 136px;
+        gap: 3px;
+        padding: 6px;
+      }
+
+      .reels {
+        grid-template-columns: 1fr;
+      }
+
+      .reel-value {
+        min-height: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
+    <source src="assets/background.mp4" type="video/mp4">
+  </video>
+  <div class="bg-shade" aria-hidden="true"></div>
+  <main class="machine" aria-live="polite">
+    <div class="burst" id="burst"></div>
+    <div class="cutin" id="cutin">激熱</div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="label">FULL STAMP CARD PRESENT CHANCE</div>
+        <h1 class="pachi-text" data-text="ご主人様プレゼントリーチ">ご主人様プレゼントリーチ</h1>
+      </div>
+      <div class="stamp-card" aria-label="全ポイント達成済みスタンプカード">
+        <div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div>
+        <div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div><div class="stamp">満</div>
+      </div>
+    </header>
+
+    <section class="stage">
+      <div class="announcement flash pachi-text" id="announcement" data-text="スタンプカード満タン、抽選突入！">スタンプカード満タン、抽選突入！</div>
+
+      <div class="reels" id="reels">
+        <article class="reel">
+          <div class="reel-title">① ジャンル</div>
+          <div class="reel-value pachi-text" id="genre" data-text="???">???</div>
+        </article>
+        <article class="reel">
+          <div class="reel-title">② ご褒美ムード</div>
+          <div class="reel-value pachi-text" id="adjective" data-text="???">???</div>
+        </article>
+        <article class="reel">
+          <div class="reel-title">③ 本気度</div>
+          <div class="reel-value pachi-text" id="budget" data-text="???">???</div>
+        </article>
+      </div>
+
+      <div class="result pachi-text" id="result" data-text="ボタンを押して、プレゼント内容を決定！">ボタンを押して、プレゼント内容を決定！</div>
+    </section>
+
+    <footer class="controls">
+      <button class="launch" id="launch" type="button">抽選スタート</button>
+    </footer>
+  </main>
+
+  <script>
+    const pools = {
+      budget: [
+        { value: "10%", weight: 4 },
+        { value: "20%", weight: 7 },
+        { value: "30%", weight: 12 },
+        { value: "40%", weight: 18 },
+        { value: "50%", weight: 30 },
+        { value: "60%", weight: 24 },
+        { value: "70%", weight: 2.4 },
+        { value: "80%", weight: 1.4 },
+        { value: "90%", weight: 0.8 },
+        { value: "100%", weight: 0.4 }
+      ],
+      adjective: ["胸きゅん", "照れちゃう", "癒やされ", "実用派", "写真映え", "ご褒美級", "予想外", "大人め"],
+      genre: ["グルメ", "インテリア", "雑貨", "美容", "ファッション", "おでかけ", "癒やし", "サプライズ"]
+    };
+
+    const labels = [
+      { key: "genre", id: "genre", title: "ジャンル" },
+      { key: "adjective", id: "adjective", title: "ご褒美ムード" },
+      { key: "budget", id: "budget", title: "本気度" }
+    ];
+
+    const announcement = document.querySelector("#announcement");
+    const result = document.querySelector("#result");
+    const launch = document.querySelector("#launch");
+    const burst = document.querySelector("#burst");
+    const cutin = document.querySelector("#cutin");
+    const reelsWrap = document.querySelector("#reels");
+    const reels = document.querySelectorAll(".reel");
+
+    let timers = [];
+    let reelTimers = [];
+    let audioCtx;
+    let reelSample;
+
+    const samplePaths = {
+      start: "assets/se-start.wav",
+      reel: "assets/se-reel.wav",
+      cutin: "assets/se-cutin.wav"
+    };
+
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
+
+    function weightedRandom(items) {
+      const total = items.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * total;
+      for (const item of items) {
+        roll -= item.weight;
+        if (roll <= 0) return item.value;
+      }
+      return items[items.length - 1].value;
+    }
+
+    function randomForKey(key) {
+      if (key === "budget") return weightedRandom(pools.budget);
+      return randomItem(pools[key]);
+    }
+
+    function budgetToStage(value) {
+      const percent = Number.parseInt(value, 10);
+      if (percent === 100) return 5;
+      if (percent >= 70) return 4;
+      if (percent >= 40) return 3;
+      return 2;
+    }
+
+    function getAudio() {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtor) return null;
+      if (!audioCtx) {
+        audioCtx = new AudioCtor();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSample(src, { loop = false, volume = 1 } = {}) {
+      const audio = new Audio(src);
+      audio.loop = loop;
+      audio.volume = volume;
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+      return audio;
+    }
+
+    function playStartSample() {
+      playSample(samplePaths.start, { volume: 0.9 });
+    }
+
+    function startReelSample() {
+      if (reelSample && !reelSample.paused) return;
+      reelSample = playSample(samplePaths.reel, { loop: true, volume: 0.82 });
+    }
+
+    function stopReelSample() {
+      if (!reelSample) return;
+      reelSample.pause();
+      reelSample.currentTime = 0;
+    }
+
+    function tone(freq, duration, type = "square", volume = 0.08, start = 0, slideTo = null) {
+      const ctx = getAudio();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = ctx.currentTime + start;
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      if (slideTo) {
+        osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
+      }
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(volume, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + duration + 0.03);
+    }
+
+    function noise(duration, volume = 0.08, start = 0, filterFreq = 1200) {
+      const ctx = getAudio();
+      if (!ctx) return;
+      const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      }
+      const source = ctx.createBufferSource();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+      const t = ctx.currentTime + start;
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(filterFreq, t);
+      filter.Q.setValueAtTime(5, t);
+      gain.gain.setValueAtTime(volume, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      source.buffer = buffer;
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      source.start(t);
+      source.stop(t + duration);
+    }
+
+    const se = {
+      decide(level = 0) {
+        const base = [440, 554, 659][level] || 659;
+        tone(base, 0.08, "triangle", 0.08);
+        tone(base * 1.5, 0.11, "square", 0.07, 0.07);
+        noise(0.12, 0.045, 0, 1800 + level * 500);
+      },
+      cutin() {
+        playSample(samplePaths.cutin, { volume: 0.92 });
+      },
+      jackpot() {
+        [523, 659, 784, 1047, 1319].forEach((freq, i) => {
+          tone(freq, 0.18, "square", 0.07, i * 0.095);
+          tone(freq * 2, 0.14, "triangle", 0.04, i * 0.095);
+        });
+        noise(0.55, 0.06, 0.08, 4200);
+      }
+    };
+
+    function setPachiText(el, text, asHtml = false) {
+      if (asHtml) {
+        el.innerHTML = text;
+        el.dataset.text = text.replace(/<br\s*\/?>/gi, "\n");
+        return;
+      }
+      el.textContent = text;
+      el.dataset.text = text;
+    }
+
+    function clearTimers() {
+      timers.forEach((timer) => clearInterval(timer));
+      timers = [];
+      reelTimers.forEach((timer) => clearInterval(timer));
+      reelTimers = [];
+      stopReelSample();
+    }
+
+    function triggerBurst() {
+      burst.classList.remove("on");
+      void burst.offsetWidth;
+      burst.classList.add("on");
+    }
+
+    function horseSilhouetteSvg() {
+      return `
+        <svg class="horse-silhouette" viewBox="0 0 720 420" role="img" aria-label="馬のシルエット">
+          <path class="horse-fill" d="M136 280
+            C134 241 150 205 186 185
+            C222 164 270 158 312 170
+            C355 181 392 172 423 145
+            C447 124 471 96 511 92
+            C548 88 581 111 592 145
+            C606 188 584 220 548 236
+            C525 246 505 247 485 242
+            C475 268 452 284 419 292
+            L404 360
+            L356 360
+            L365 301
+            C326 300 286 294 251 283
+            L219 360
+            L171 360
+            L189 280
+            C170 292 152 293 136 280 Z" />
+          <path class="horse-fill" d="M503 96
+            C514 55 546 34 588 33
+            C569 58 562 83 571 108 Z" />
+          <path class="horse-fill" d="M574 118
+            C612 103 648 114 676 145
+            C641 147 615 157 594 178 Z" />
+          <path class="horse-fill" d="M138 279
+            C103 296 67 294 34 268
+            C78 263 108 247 129 219 Z" />
+          <circle class="horse-eye" cx="546" cy="137" r="8" />
+        </svg>`;
+    }
+
+    function triggerCutin(text, variant = "") {
+      se.cutin();
+      cutin.classList.add("pachi-text");
+      cutin.classList.remove("green", "red", "rainbow", "horse");
+      if (variant) cutin.classList.add(variant);
+      if (variant === "horse") {
+        cutin.innerHTML = horseSilhouetteSvg();
+        cutin.dataset.text = "";
+      } else {
+        setPachiText(cutin, text);
+      }
+      cutin.classList.remove("on");
+      void cutin.offsetWidth;
+      cutin.classList.add("on");
+    }
+
+    function setAnnouncement(text, flashing = true) {
+      setPachiText(announcement, text);
+      announcement.classList.toggle("flash", flashing);
+    }
+
+    function spinReel(index) {
+      const label = labels[index];
+      const el = document.querySelector(`#${label.id}`);
+      reels.forEach((reel) => reel.classList.remove("active"));
+      reels[index].classList.add("active");
+      reels[index].classList.add("spinning");
+      startReelSample();
+      if (reelTimers[index]) {
+        clearInterval(reelTimers[index]);
+      }
+      const timer = setInterval(() => {
+        setPachiText(el, randomForKey(label.key));
+      }, 54);
+      timers.push(timer);
+      reelTimers[index] = timer;
+    }
+
+    async function stopReel(index, value) {
+      const label = labels[index];
+      const el = document.querySelector(`#${label.id}`);
+      if (reelTimers[index]) {
+        clearInterval(reelTimers[index]);
+        reelTimers[index] = null;
+      }
+      stopReelSample();
+      reels[index].classList.remove("spinning");
+      reels[index].classList.add("locked");
+      reels[index].classList.add("active");
+      setPachiText(el, value);
+      se.decide(index);
+      triggerBurst();
+      setAnnouncement(`${label.title} 決定！`, true);
+      await wait(1150);
+    }
+
+    async function runBudgetEvolution(finalValue) {
+      const targetStage = budgetToStage(finalValue);
+      const transitions = [
+        { from: 1, to: 2, label: "本気度 2段階目", cutin: "発展", variant: "green" },
+        { from: 2, to: 3, label: "本気度 3段階目", cutin: "期待", variant: "red" },
+        { from: 3, to: 4, label: "本気度 4段階目", cutin: "激熱", variant: "rainbow" },
+        { from: 4, to: 5, label: "本気度 5段階目", cutin: "", variant: "horse" }
+      ];
+
+      setAnnouncement("本気度 1段階目", true);
+      spinReel(2);
+      await wait(1150);
+
+      for (const transition of transitions) {
+        if (transition.to > targetStage) break;
+        triggerCutin(transition.cutin, transition.variant);
+        await wait(transition.variant === "horse" ? 1800 : 1550);
+        setAnnouncement(transition.label, true);
+        await wait(transition.to === targetStage ? 1500 : 1050);
+      }
+
+      await stopReel(2, finalValue);
+    }
+
+    async function runLottery() {
+      clearTimers();
+      getAudio();
+      playStartSample();
+      launch.disabled = true;
+      result.classList.remove("jackpot");
+      setPachiText(result, "運命のルーレット、始動...");
+      reelsWrap.classList.add("focus-mode");
+      reels.forEach((reel) => reel.classList.remove("locked", "active", "spinning"));
+      labels.forEach((label) => {
+        setPachiText(document.querySelector(`#${label.id}`), "???");
+      });
+
+      setAnnouncement("スタンプカード、発光！", true);
+      triggerBurst();
+      await wait(1200);
+
+      const selected = {
+        budget: randomForKey("budget"),
+        adjective: randomForKey("adjective"),
+        genre: randomForKey("genre")
+      };
+
+      setAnnouncement("まずはジャンルを決めろ！", true);
+      spinReel(0);
+      await wait(1700);
+      await stopReel(0, selected.genre);
+
+      setAnnouncement("まだまだ続く！", true);
+      await wait(1000);
+
+      setAnnouncement("ご褒美ムードを決めろ！", true);
+      spinReel(1);
+      await wait(1650);
+      await stopReel(1, selected.adjective);
+
+      setAnnouncement("ラスト、本気度を決めろ！", true);
+      await wait(950);
+      await runBudgetEvolution(selected.budget);
+
+      clearTimers();
+      reelsWrap.classList.remove("focus-mode");
+      reels.forEach((reel) => reel.classList.remove("active", "spinning"));
+      setAnnouncement("大当たり！", true);
+      se.jackpot();
+      setPachiText(result, `本気度 ${selected.budget}で<br>${selected.adjective}${selected.genre}プレゼントに決定！`, true);
+      result.classList.add("jackpot");
+      launch.disabled = false;
+      launch.textContent = "もう一度 抽選";
+    }
+
+    launch.addEventListener("click", runLottery);
+  </script>
+</body>
+</html>
