@@ -351,13 +351,13 @@
       padding: 12px 24px;
       border: 0;
       border-radius: 8px;
-      color: #230308;
-      background: linear-gradient(180deg, #fff3b6, #ffd24f 44%, #ff3b69 45%, #c90d39);
-      box-shadow: 0 8px 0 #6d071e, 0 0 34px rgba(255, 48, 95, 0.75);
+      color: #fff7f2;
+      background: #d80f24;
+      box-shadow: 0 8px 0 #710711, 0 0 34px rgba(255, 31, 57, 0.78);
       font-size: clamp(19px, 2.7vw, 34px);
       font-weight: 950;
       cursor: pointer;
-      text-shadow: 0 1px rgba(255, 255, 255, 0.52);
+      text-shadow: 0 2px 0 #5a020b, 0 0 12px rgba(255, 255, 255, 0.32);
     }
 
     .launch:active {
@@ -847,13 +847,13 @@
     async function runBudgetEvolution(finalValue) {
       const targetStage = budgetToStage(finalValue);
       const transitions = [
-        { from: 1, to: 2, label: "本気度 2段階目", cutin: "発展", variant: "green" },
-        { from: 2, to: 3, label: "本気度 3段階目", cutin: "期待", variant: "red" },
-        { from: 3, to: 4, label: "本気度 4段階目", cutin: "激熱", variant: "rainbow" },
-        { from: 4, to: 5, label: "本気度 5段階目", cutin: "", variant: "horse" }
+        { from: 1, to: 2, cutin: "発展", variant: "green" },
+        { from: 2, to: 3, cutin: "期待", variant: "red" },
+        { from: 3, to: 4, cutin: "激熱", variant: "rainbow" },
+        { from: 4, to: 5, cutin: "", variant: "horse" }
       ];
 
-      setAnnouncement("本気度 1段階目", true);
+      setAnnouncement("本気度を決めろ！", true);
       spinReel(2);
       await wait(1150);
 
@@ -861,7 +861,7 @@
         if (transition.to > targetStage) break;
         triggerCutin(transition.cutin, transition.variant);
         await wait(transition.variant === "horse" ? 1800 : 1550);
-        setAnnouncement(transition.label, true);
+        setAnnouncement("本気度を決めろ！", true);
         await wait(transition.to === targetStage ? 1500 : 1050);
       }
 
