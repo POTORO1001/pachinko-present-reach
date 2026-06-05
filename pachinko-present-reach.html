@@ -118,23 +118,22 @@
     .pachi-text {
       position: relative;
       display: inline-block;
-      color: #f42734;
-      font-family: "HGP創英角ｺﾞｼｯｸUB", "HGP創英角ゴシックUB", "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+      color: #ff223f;
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", "Meiryo", "Arial Black", system-ui, sans-serif;
       font-weight: 950;
       letter-spacing: 0;
-      -webkit-text-stroke: 0.038em #fff8c7;
+      -webkit-text-stroke: 0.07em #fff7d1;
       paint-order: stroke fill;
       filter:
-        drop-shadow(0.055em 0.055em 0 #5b090c)
-        drop-shadow(0.1em 0.1em 0 #160001)
-        drop-shadow(0 0 0.11em rgba(255, 247, 153, 0.82))
-        drop-shadow(0 0 0.28em rgba(255, 38, 67, 0.62));
+        drop-shadow(0.045em 0.045em 0 #7a0711)
+        drop-shadow(0.105em 0.105em 0 #140002)
+        drop-shadow(0 0 0.12em rgba(255, 236, 100, 0.78))
+        drop-shadow(0 0 0.32em rgba(255, 48, 95, 0.62));
       text-shadow:
-        0 -0.05em 0 #fff8d6,
-        0.026em 0.026em 0 #ffe45d,
-        -0.026em 0.026em 0 #ffe45d,
-        0.06em 0.06em 0 #a30710,
-        0.095em 0.095em 0 #330004;
+        0 -0.035em 0 rgba(255, 255, 255, 0.9),
+        0.035em 0.035em 0 #ffd23f,
+        0.07em 0.07em 0 #8e0612,
+        0.11em 0.11em 0 #1b0003;
     }
 
     .pachi-text::after {
@@ -145,7 +144,7 @@
       display: grid;
       place-items: center;
       color: transparent;
-      background: linear-gradient(180deg, #fff 0 14%, #fff8b8 15% 30%, #ffea3d 31% 42%, #ff4c47 43% 66%, #b6000b 67% 100%);
+      background: linear-gradient(180deg, #fff 0 13%, #fff7a8 14% 31%, #ffd92f 32% 44%, #ff334b 45% 72%, #b80014 73% 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-stroke: 0;
@@ -203,14 +202,17 @@
     }
 
     .announcement {
-      min-height: clamp(62px, 9vw, 108px);
+      min-height: clamp(70px, 9.5vw, 118px);
       display: grid;
       place-items: center;
       margin-bottom: clamp(12px, 2vw, 22px);
-      font-size: clamp(25px, 5.3vw, 76px);
-      line-height: 1.08;
+      padding: 0.08em 0.2em 0.16em;
+      border-radius: 8px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(80, 0, 15, 0.34), rgba(0, 0, 0, 0.2));
+      font-size: clamp(25px, 4.9vw, 70px);
+      line-height: 1.15;
       text-align: center;
-      transform: skew(-5deg);
+      transform: skew(-3deg);
     }
 
     .announcement.flash {
@@ -218,7 +220,7 @@
     }
 
     @keyframes flashText {
-      50% { color: var(--gold); transform: scale(1.025) skew(-5deg); }
+      50% { color: var(--gold); transform: scale(1.018) skew(-3deg); }
     }
 
     .reels {
@@ -253,7 +255,7 @@
 
     .reels.focus-mode .reel.active .reel-value {
       min-height: clamp(190px, 30vw, 330px);
-      font-size: clamp(54px, 10vw, 140px);
+      font-size: clamp(58px, 9.4vw, 132px);
     }
 
     .reel {
@@ -275,10 +277,11 @@
     }
 
     .reel-title {
-      color: var(--muted);
-      font-size: clamp(12px, 1.5vw, 18px);
-      font-weight: 850;
+      color: #fff7d7;
+      font-size: clamp(13px, 1.7vw, 22px);
+      font-weight: 950;
       text-align: center;
+      text-shadow: 0 2px 0 #140004, 0 0 12px rgba(255, 213, 106, 0.62);
     }
 
     .reel-value {
@@ -288,10 +291,10 @@
       margin-top: 8px;
       border-radius: 7px;
       background:
-        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent),
-        radial-gradient(circle at center, rgba(255, 213, 106, 0.18), rgba(0, 0, 0, 0.58));
-      font-size: clamp(28px, 5.6vw, 76px);
-      line-height: 1;
+        linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.13), rgba(0, 0, 0, 0.18)),
+        radial-gradient(circle at center, rgba(255, 213, 106, 0.24), rgba(0, 0, 0, 0.72));
+      font-size: clamp(30px, 5.2vw, 70px);
+      line-height: 1.08;
       text-align: center;
       word-break: keep-all;
       overflow-wrap: anywhere;
@@ -308,17 +311,20 @@
     }
 
     .result {
-      min-height: clamp(78px, 11vw, 130px);
+      min-height: clamp(92px, 12vw, 150px);
       display: grid;
       place-items: center;
       margin-top: clamp(14px, 2.5vw, 26px);
       padding: clamp(10px, 2vw, 18px);
       border-radius: 8px;
-      background: rgba(4, 3, 6, 0.64);
-      border: 2px solid rgba(255, 213, 106, 0.35);
-      font-size: clamp(19px, 3.2vw, 46px);
+      background:
+        linear-gradient(180deg, rgba(255, 213, 106, 0.1), rgba(0, 0, 0, 0.54)),
+        rgba(4, 3, 6, 0.76);
+      border: 2px solid rgba(255, 213, 106, 0.62);
+      box-shadow: inset 0 0 24px rgba(255, 213, 106, 0.12), 0 0 24px rgba(255, 48, 95, 0.22);
+      font-size: clamp(21px, 3vw, 42px);
       text-align: center;
-      line-height: 1.25;
+      line-height: 1.34;
     }
 
     .result.jackpot {
@@ -391,7 +397,7 @@
       display: grid;
       place-items: center;
       background: rgba(255, 48, 95, 0.9);
-      font-size: clamp(46px, 13vw, 168px);
+      font-size: clamp(48px, 11vw, 150px);
       text-align: center;
       transform: translateX(-110%);
       pointer-events: none;
@@ -403,9 +409,9 @@
         linear-gradient(90deg, rgba(2, 52, 24, 0.96), rgba(22, 160, 66, 0.94), rgba(0, 45, 22, 0.96));
       -webkit-text-stroke-color: #eaffd8;
       filter:
-        drop-shadow(0.04em 0.04em 0 #01240d)
-        drop-shadow(0 0 0.2em rgba(137, 255, 111, 0.9))
-        drop-shadow(0 0 0.46em rgba(55, 255, 100, 0.72));
+        drop-shadow(0.045em 0.045em 0 #01240d)
+        drop-shadow(0.095em 0.095em 0 #000)
+        drop-shadow(0 0 0.22em rgba(137, 255, 111, 0.86));
     }
 
     .cutin.red {
@@ -414,9 +420,9 @@
         linear-gradient(90deg, rgba(84, 0, 8, 0.96), rgba(255, 37, 67, 0.94), rgba(78, 0, 12, 0.96));
       -webkit-text-stroke-color: #fff1a8;
       filter:
-        drop-shadow(0.04em 0.04em 0 #3f0008)
-        drop-shadow(0 0 0.2em rgba(255, 213, 106, 0.92))
-        drop-shadow(0 0 0.5em rgba(255, 48, 95, 0.82));
+        drop-shadow(0.045em 0.045em 0 #3f0008)
+        drop-shadow(0.095em 0.095em 0 #000)
+        drop-shadow(0 0 0.24em rgba(255, 213, 106, 0.9));
     }
 
     .cutin.rainbow {
@@ -426,9 +432,9 @@
       animation: rainbowSlide 1.45s linear infinite;
       -webkit-text-stroke-color: #fff;
       filter:
-        drop-shadow(0.04em 0.04em 0 #220018)
-        drop-shadow(0 0 0.2em rgba(255, 255, 255, 0.95))
-        drop-shadow(0 0 0.55em rgba(255, 255, 255, 0.8));
+        drop-shadow(0.045em 0.045em 0 #220018)
+        drop-shadow(0.095em 0.095em 0 #000)
+        drop-shadow(0 0 0.24em rgba(255, 255, 255, 0.9));
     }
 
     .cutin.horse {
