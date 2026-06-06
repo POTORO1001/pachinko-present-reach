@@ -367,6 +367,92 @@
       animation: reelShake 0.075s linear infinite;
     }
 
+    .reel.theme-green {
+      border-color: rgba(137, 255, 111, 0.9);
+      box-shadow: inset 0 0 34px rgba(137, 255, 111, 0.18), 0 0 32px rgba(55, 255, 100, 0.42);
+    }
+
+    .reel.theme-green .reel-value {
+      background: radial-gradient(circle at center, rgba(137, 255, 111, 0.3), rgba(0, 42, 18, 0.78));
+    }
+
+    .reel.theme-green .pachi-text {
+      color: #00df5d;
+      -webkit-text-stroke-color: #edffdb;
+      filter: drop-shadow(0.045em 0.045em 0 #003414) drop-shadow(0.105em 0.105em 0 #000) drop-shadow(0 0 0.3em rgba(137, 255, 111, 0.72));
+    }
+
+    .reel.theme-green .pachi-text::after {
+      background: linear-gradient(180deg, #fff 0 16%, #dfff99 17% 36%, #31ff6e 37% 72%, #007d31 73% 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .reel.theme-red {
+      border-color: rgba(255, 48, 95, 0.95);
+      box-shadow: inset 0 0 34px rgba(255, 48, 95, 0.2), 0 0 34px rgba(255, 31, 57, 0.48);
+    }
+
+    .reel.theme-red .reel-value {
+      background: radial-gradient(circle at center, rgba(255, 48, 95, 0.3), rgba(70, 0, 10, 0.82));
+    }
+
+    .reel.theme-red .pachi-text {
+      color: #ff1732;
+      -webkit-text-stroke-color: #fff2c4;
+      filter: drop-shadow(0.045em 0.045em 0 #71000c) drop-shadow(0.105em 0.105em 0 #000) drop-shadow(0 0 0.32em rgba(255, 48, 95, 0.78));
+    }
+
+    .reel.theme-red .pachi-text::after {
+      background: linear-gradient(180deg, #fff 0 14%, #ffe985 15% 33%, #ff4a4a 34% 72%, #a80012 73% 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .reel.theme-rainbow {
+      border-color: rgba(255, 255, 255, 0.95);
+      box-shadow: inset 0 0 38px rgba(255, 255, 255, 0.2), 0 0 38px rgba(255, 255, 255, 0.5);
+    }
+
+    .reel.theme-rainbow .reel-value {
+      background: linear-gradient(90deg, rgba(255, 23, 68, 0.44), rgba(255, 238, 88, 0.42), rgba(0, 230, 118, 0.42), rgba(0, 176, 255, 0.42), rgba(124, 77, 255, 0.44));
+    }
+
+    .reel.theme-rainbow .pachi-text {
+      color: #fff;
+      -webkit-text-stroke-color: #fff;
+      filter: drop-shadow(0.045em 0.045em 0 #290020) drop-shadow(0.105em 0.105em 0 #000) drop-shadow(0 0 0.34em rgba(255, 255, 255, 0.8));
+    }
+
+    .reel.theme-rainbow .pachi-text::after {
+      background: linear-gradient(90deg, #ff1744, #ff9100, #ffee58, #00e676, #00b0ff, #7c4dff, #ff1744);
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: rainbowSlide 1.25s linear infinite;
+    }
+
+    .reel.theme-black {
+      border-color: rgba(255, 213, 106, 0.92);
+      box-shadow: inset 0 0 34px rgba(0, 0, 0, 0.52), 0 0 36px rgba(255, 213, 106, 0.35);
+    }
+
+    .reel.theme-black .reel-value {
+      background: radial-gradient(circle at center, rgba(255, 213, 106, 0.12), rgba(0, 0, 0, 0.94));
+    }
+
+    .reel.theme-black .pachi-text {
+      color: #080808;
+      -webkit-text-stroke-color: #fff6c8;
+      filter: drop-shadow(0.045em 0.045em 0 #ffdc70) drop-shadow(0.105em 0.105em 0 #000) drop-shadow(0 0 0.32em rgba(255, 213, 106, 0.76));
+    }
+
+    .reel.theme-black .pachi-text::after {
+      background: linear-gradient(180deg, #fff 0 12%, #ffdc70 13% 28%, #1e1e1e 29% 74%, #000 75% 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
     @keyframes reelShake {
       25% { transform: translate(2px, -1px); }
       50% { transform: translate(-2px, 1px); }
@@ -910,6 +996,14 @@
       announcement.classList.toggle("flash", flashing);
     }
 
+    function setReelTheme(index, theme = "") {
+      const themeClasses = ["theme-green", "theme-red", "theme-rainbow", "theme-black"];
+      reels[index].classList.remove(...themeClasses);
+      if (theme) {
+        reels[index].classList.add(`theme-${theme}`);
+      }
+    }
+
     function spinReel(index) {
       const label = labels[index];
       const el = document.querySelector(`#${label.id}`);
@@ -948,13 +1042,14 @@
     async function runBudgetEvolution(finalValue) {
       const targetStage = budgetToStage(finalValue);
       const transitions = [
-        { from: 1, to: 2, cutin: "発展", variant: "green" },
-        { from: 2, to: 3, cutin: "期待", variant: "red" },
-        { from: 3, to: 4, cutin: "激熱", variant: "rainbow" },
-        { from: 4, to: 5, cutin: "", variant: "horse" }
+        { from: 1, to: 2, cutin: "発展", variant: "green", theme: "green" },
+        { from: 2, to: 3, cutin: "期待", variant: "red", theme: "red" },
+        { from: 3, to: 4, cutin: "激熱", variant: "rainbow", theme: "rainbow" },
+        { from: 4, to: 5, cutin: "", variant: "horse", theme: "black" }
       ];
 
       setAnnouncement("本気度を決めろ！", true);
+      setReelTheme(2);
       spinReel(2);
       await wait(1150);
 
@@ -962,6 +1057,7 @@
         if (transition.to > targetStage) break;
         triggerCutin(transition.cutin, transition.variant);
         await wait(transition.variant === "horse" ? 1800 : 1550);
+        setReelTheme(2, transition.theme);
         setAnnouncement("本気度を決めろ！", true);
         await wait(transition.to === targetStage ? 1500 : 1050);
       }
@@ -978,7 +1074,7 @@
       result.classList.remove("jackpot");
       setPachiText(result, "運命のルーレット、始動...");
       reelsWrap.classList.add("focus-mode");
-      reels.forEach((reel) => reel.classList.remove("locked", "active", "spinning"));
+      reels.forEach((reel) => reel.classList.remove("locked", "active", "spinning", "theme-green", "theme-red", "theme-rainbow", "theme-black"));
       labels.forEach((label) => {
         setPachiText(document.querySelector(`#${label.id}`), "???");
       });
