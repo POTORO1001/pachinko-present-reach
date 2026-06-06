@@ -595,6 +595,10 @@
   <video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
     <source src="assets/background.mp4" type="video/mp4">
   </video>
+  <audio id="audio-start" src="assets/se-start.wav" preload="auto"></audio>
+  <audio id="audio-reel" src="assets/se-reel.wav" preload="auto" loop></audio>
+  <audio id="audio-cutin" src="assets/se-cutin.wav" preload="auto"></audio>
+  <audio id="audio-result" src="assets/se-result.mp3" preload="auto"></audio>
   <div class="bg-shade" aria-hidden="true"></div>
   <main class="machine" aria-live="polite">
     <div class="burst" id="burst"></div>
@@ -671,18 +675,17 @@
     const cutin = document.querySelector("#cutin");
     const reelsWrap = document.querySelector("#reels");
     const reels = document.querySelectorAll(".reel");
+    const samplePlayers = {
+      start: document.querySelector("#audio-start"),
+      reel: document.querySelector("#audio-reel"),
+      cutin: document.querySelector("#audio-cutin"),
+      result: document.querySelector("#audio-result")
+    };
 
     let timers = [];
     let reelTimers = [];
     let audioCtx;
-    let reelSample;
-
-    const samplePaths = {
-      start: "assets/se-start.wav",
-      reel: "assets/se-reel.wav",
-      cutin: "assets/se-cutin.wav",
-      result: "assets/se-result.mp3"
-    };
+    let audioUnlocked = false;
 
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
@@ -722,28 +725,50 @@
       return audioCtx;
     }
 
-    function playSample(src, { loop = false, volume = 1 } = {}) {
-      const audio = new Audio(src);
-      audio.loop = loop;
+    async function unlockSamples() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      await Promise.all(Object.values(samplePlayers).map(async (audio) => {
+        if (!audio) return;
+        const previousVolume = audio.volume;
+        audio.volume = 0;
+        try {
+          await audio.play();
+          audio.pause();
+          audio.currentTime = 0;
+        } catch {
+          audioUnlocked = false;
+        } finally {
+          audio.volume = previousVolume;
+        }
+      }));
+    }
+
+    function playSample(key, { volume = 1, restart = true } = {}) {
+      const audio = samplePlayers[key];
+      if (!audio) return;
       audio.volume = volume;
-      audio.currentTime = 0;
+      if (restart) {
+        try { audio.currentTime = 0; } catch {}
+      }
       audio.play().catch(() => {});
-      return audio;
     }
 
     function playStartSample() {
-      playSample(samplePaths.start, { volume: 0.9 });
+      playSample("start", { volume: 0.9 });
     }
 
     function startReelSample() {
-      if (reelSample && !reelSample.paused) return;
-      reelSample = playSample(samplePaths.reel, { loop: true, volume: 0.82 });
+      const audio = samplePlayers.reel;
+      if (audio && !audio.paused) return;
+      playSample("reel", { volume: 0.82, restart: true });
     }
 
     function stopReelSample() {
-      if (!reelSample) return;
-      reelSample.pause();
-      reelSample.currentTime = 0;
+      const audio = samplePlayers.reel;
+      if (!audio) return;
+      audio.pause();
+      try { audio.currentTime = 0; } catch {}
     }
 
     function tone(freq, duration, type = "square", volume = 0.08, start = 0, slideTo = null) {
@@ -800,10 +825,10 @@
         noise(0.12, 0.045, 0, 1800 + level * 500);
       },
       cutin() {
-        playSample(samplePaths.cutin, { volume: 0.92 });
+        playSample("cutin", { volume: 0.92 });
       },
       jackpot() {
-        playSample(samplePaths.result, { volume: 0.95 });
+        playSample("result", { volume: 0.95 });
       }
     };
 
@@ -947,6 +972,7 @@
     async function runLottery() {
       clearTimers();
       getAudio();
+      await unlockSamples();
       playStartSample();
       launch.disabled = true;
       result.classList.remove("jackpot");
