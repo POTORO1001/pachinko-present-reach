@@ -1108,7 +1108,7 @@
 
       clearTimers();
       reelsWrap.classList.remove("focus-mode");
-      reels.forEach((reel) => reel.classList.remove("active", "spinning"));
+      reels.forEach((reel) => reel.classList.remove("active", "spinning", "theme-green", "theme-red", "theme-rainbow", "theme-black"));
       setAnnouncement("おめでとうございます！", true);
       se.jackpot();
       setPachiText(result, `本気度 ${selected.budget}で<br>${selected.adjective}${selected.genre}プレゼントに決定！`, true);
