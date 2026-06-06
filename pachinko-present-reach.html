@@ -193,6 +193,69 @@
       50% { transform: scale(1.08); filter: brightness(1.22); }
     }
 
+    .clown {
+      position: fixed;
+      z-index: 0;
+      width: clamp(72px, 8vw, 118px);
+      aspect-ratio: 1;
+      pointer-events: none;
+      opacity: 0.92;
+      filter: drop-shadow(0 0 14px rgba(255, 213, 106, 0.56));
+      animation: clownFloat 3.4s ease-in-out infinite;
+    }
+
+    .clown::before {
+      content: "";
+      position: absolute;
+      inset: 15% 16% 8%;
+      border-radius: 50% 50% 46% 46%;
+      background:
+        radial-gradient(circle at 36% 44%, #101018 0 5%, transparent 6%),
+        radial-gradient(circle at 64% 44%, #101018 0 5%, transparent 6%),
+        radial-gradient(circle at 50% 58%, #ff1339 0 10%, transparent 11%),
+        radial-gradient(ellipse at 50% 75%, #cc001f 0 5%, transparent 6%),
+        #fff2d5;
+      border: 3px solid #101018;
+      box-shadow:
+        inset 0 -8px rgba(255, 213, 106, 0.22),
+        0 0 0 5px rgba(255, 255, 255, 0.12);
+    }
+
+    .clown::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 44%, #1eb8ff 0 13%, transparent 14%),
+        radial-gradient(circle at 80% 44%, #1eb8ff 0 13%, transparent 14%),
+        conic-gradient(from 215deg at 50% 18%, transparent 0 18%, #ffcf2f 18% 42%, #d80f24 42% 68%, transparent 68%);
+      clip-path: polygon(50% 0, 72% 33%, 92% 52%, 82% 100%, 18% 100%, 8% 52%, 28% 33%);
+    }
+
+    .clown.one {
+      left: clamp(12px, 3vw, 44px);
+      top: 23vh;
+      transform: rotate(-10deg);
+    }
+
+    .clown.two {
+      right: clamp(12px, 4vw, 58px);
+      top: 28vh;
+      transform: rotate(9deg) scale(0.92);
+      animation-delay: -1.2s;
+    }
+
+    .clown.three {
+      left: clamp(18px, 7vw, 112px);
+      bottom: 13vh;
+      transform: rotate(7deg) scale(0.78);
+      animation-delay: -2.1s;
+    }
+
+    @keyframes clownFloat {
+      50% { translate: 0 -12px; filter: drop-shadow(0 0 22px rgba(255, 48, 95, 0.58)); }
+    }
+
     .stage {
       display: grid;
       align-content: center;
@@ -515,6 +578,16 @@
       .reel-value {
         min-height: 88px;
       }
+
+      .clown {
+        width: 58px;
+        opacity: 0.58;
+      }
+
+      .clown.two,
+      .clown.three {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -526,6 +599,9 @@
   <main class="machine" aria-live="polite">
     <div class="burst" id="burst"></div>
     <div class="cutin" id="cutin">激熱</div>
+    <div class="clown one" aria-hidden="true"></div>
+    <div class="clown two" aria-hidden="true"></div>
+    <div class="clown three" aria-hidden="true"></div>
 
     <header class="topbar">
       <div class="brand">
@@ -547,7 +623,7 @@
           <div class="reel-value pachi-text" id="genre" data-text="???">???</div>
         </article>
         <article class="reel">
-          <div class="reel-title">② ご褒美ムード</div>
+          <div class="reel-title">② ご褒美ワード</div>
           <div class="reel-value pachi-text" id="adjective" data-text="???">???</div>
         </article>
         <article class="reel">
@@ -584,7 +660,7 @@
 
     const labels = [
       { key: "genre", id: "genre", title: "ジャンル" },
-      { key: "adjective", id: "adjective", title: "ご褒美ムード" },
+      { key: "adjective", id: "adjective", title: "ご褒美ワード" },
       { key: "budget", id: "budget", title: "本気度" }
     ];
 
@@ -899,7 +975,7 @@
       setAnnouncement("まだまだ続く！", true);
       await wait(1000);
 
-      setAnnouncement("ご褒美ムードを決めろ！", true);
+      setAnnouncement("ご褒美ワードを決めろ！", true);
       spinReel(1);
       await wait(1650);
       await stopReel(1, selected.adjective);
@@ -911,7 +987,7 @@
       clearTimers();
       reelsWrap.classList.remove("focus-mode");
       reels.forEach((reel) => reel.classList.remove("active", "spinning"));
-      setAnnouncement("大当たり！", true);
+      setAnnouncement("おめでとうございます！", true);
       se.jackpot();
       setPachiText(result, `本気度 ${selected.budget}で<br>${selected.adjective}${selected.genre}プレゼントに決定！`, true);
       result.classList.add("jackpot");
